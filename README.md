@@ -1,4 +1,11 @@
 # Update:
+
+I am not the owner of this code and the content has been forked from the original repository
+https://github.com/spencerlambert/mysql-events
+
+In my fork the mysql-events initialization method has been changed to support custom error handling in the file where this module is used.
+The previous way of handling did not work for some specific situations like recovering when the database is restarted. The new connection was set up and was active on node process level, but all connection objects of the event were indicated as disconnected and log updates or event triggers were not detected. Sometimes a developer should decide just to create completely new MySQLEvents object and therefore the custom event handling should be implemented for more flexibility.
+
 I haven't been activly updating this code.  Others have been activley making updates.  Please also checkout their work.
 
 [https://github.com/rodrigogs/mysql-events](https://github.com/rodrigogs/mysql-events)
@@ -145,6 +152,25 @@ Its basically a dot '.' seperated string. It can have the following combinations
 - _database.table.column_: watches for changes in the column. Which database, table & other changed columns can be inspected from the oldRow & newRow
 - _database.table.column.value_: watches for changes in the column and only trigger the callback if the changed value is equal to the 3rd argument passed to the add().
 - _database.table.column.regexp_: watches for changes in the column and only trigger the callback if the changed value passes a regular expression test to the 3rd argument passed to the add(). The 3rd argument must be a Javascript Regular Expression Object, like, if you want to match for a starting sting (eg: MySQL) in the value, use /MySQL/i. This will trigger the callback only if the new value starts with MySQL
+
+# ERROR HANDLING
+
+For error handling simply set on error handler for ZongJi instance inside MysqlEvents object.
+
+function createMysqlEventWatcher() {
+
+...
+
+ mysqlEventWatcher.zongji.on('error',function(err) {
+          mysqlEventWatcher.stop();
+          // to avoid multiple triggering of new mysql event watcher creation
+          validWatcherExists = false;
+          setTimeout(createMysqlEventWatcher, 2000);
+});
+
+...
+
+}
 
 # LICENSE
 MIT
