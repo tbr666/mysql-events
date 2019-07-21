@@ -4,31 +4,11 @@ var _underScore = require('underscore');
 var RETRY_TIMEOUT = 4000;
 
 function zongjiManager(dsn, options, onBinlog) {
+  var self = this;
   var newInst = new ZongJi(dsn, options);
-    newInst.on('error', function(reason) {
-        //Make sure all database connections are cancelled before creating a new one
-        newInst.stop();
-
-        newInst.removeListener('binlog', onBinlog);
-    	  newInst.child = false;
-        setTimeout(function() {
-            // If multiple errors happened, a new instance may have already been created
-            if(!newInst.child) {
-                var newInstNext = zongjiManager(dsn, Object.assign({}, options, newInst.binlogNextPos
-                 	    ? {  binlogName: newInst.binlogName,
-                        	 binlogNextPos: newInst.binlogNextPos
-                 	      }
-                 	    : {}
-                ), onBinlog);
-                newInst.stop();
-                newInst = newInstNext;
-                newInst.child = true;
-            }
-        }, RETRY_TIMEOUT);
-    });
-    newInst.on('binlog', onBinlog);
-    newInst.start(options);
-    return newInst;
+  newInst.on('binlog', onBinlog);
+  newInst.start(options);
+  return newInst;
 }
 
 var MySQLEvents = function(dsn, settings) {
