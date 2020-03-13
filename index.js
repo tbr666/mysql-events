@@ -212,7 +212,8 @@ var MySQLEvents = function(dsn, settings) {
       }
       else {
         //reset the options
-        this.zongji.set(map);
+        this.zongji._options(map);
+        this.zongji._filters(map);
       }
     },
 
